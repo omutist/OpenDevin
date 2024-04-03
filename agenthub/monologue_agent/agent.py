@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any
 from opendevin.agent import Agent
 from opendevin.state import State
 from opendevin.llm.llm import LLM
@@ -79,12 +79,12 @@ INITIAL_THOUGHTS = [
 class MonologueAgent(Agent):
     _initialized = False
 
-    def __init__(self, llm: LLM):
+    def __init__(self, llm: LLM) -> None:
         super().__init__(llm)
         self.monologue = Monologue()
         self.memory = LongTermMemory()
 
-    def _add_event(self, event: dict):
+    def _add_event(self, event: dict[str, Any]) -> None:
         if "extras" in event and "screenshot" in event["extras"]:
             del event["extras"]["screenshot"]
         if 'args' in event and 'output' in event['args'] and len(event['args']['output']) > MAX_OUTPUT_LENGTH:
@@ -95,7 +95,7 @@ class MonologueAgent(Agent):
         if self.monologue.get_total_length() > MAX_MONOLOGUE_LENGTH:
             self.monologue.condense(self.llm)
 
-    def _initialize(self, task):
+    def _initialize(self, task: str | None) -> None:
         if self._initialized:
             return
 
@@ -167,6 +167,6 @@ class MonologueAgent(Agent):
         self.latest_action = action
         return action
 
-    def search_memory(self, query: str) -> List[str]:
+    def search_memory(self, query: str) -> list[str]:
         return self.memory.search(query)
 

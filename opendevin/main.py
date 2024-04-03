@@ -18,7 +18,7 @@ def read_task_from_stdin() -> str:
     """Read task from stdin."""
     return sys.stdin.read()
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Run an agent with a specific task")
     parser.add_argument("-d", "--directory", required=True, type=str, help="The working directory for the agent")
@@ -29,7 +29,7 @@ def parse_arguments():
     parser.add_argument("-i", "--max-iterations", default=config.get("MAX_ITERATIONS"), type=int, help="The maximum number of iterations to run the agent")
     return parser.parse_args()
 
-async def main():
+async def main() -> None:
     """Main coroutine to run the agent controller with task input flexibility."""
     args = parse_arguments()
 

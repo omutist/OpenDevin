@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from opendevin.controller import AgentController
@@ -10,7 +10,7 @@ class Action:
     def run(self, controller: "AgentController") -> "Observation":
         raise NotImplementedError
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         try:
             v = d.pop('action')

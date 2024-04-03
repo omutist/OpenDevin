@@ -3,9 +3,11 @@ from llama_index.core import Document
 from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.core import VectorStoreIndex
 from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.core.schema import QueryType
 
 from opendevin import config
 from . import json
+from typing import Any
 
 embedding_strategy = config.get("LLM_EMBEDDING_MODEL")
 
@@ -40,14 +42,14 @@ else:
 
 
 class LongTermMemory:
-    def __init__(self):
+    def __init__(self) -> None:
         db = chromadb.Client()
         self.collection = db.get_or_create_collection(name="memories")
         vector_store = ChromaVectorStore(chroma_collection=self.collection)
         self.index = VectorStoreIndex.from_vector_store(vector_store, embed_model=embed_model)
         self.thought_idx = 0
 
-    def add_event(self, event):
+    def add_event(self, event: dict[str, Any]) -> None:
         id = ""
         t = ""
         if "action" in event:
@@ -68,7 +70,7 @@ class LongTermMemory:
         self.thought_idx += 1
         self.index.insert(doc)
 
-    def search(self, query, k=10):
+    def search(self, query: QueryType, k: int=10) -> list[str]:
         retriever = VectorIndexRetriever(
             index=self.index,
             similarity_top_k=k,

@@ -2,7 +2,7 @@ import asyncio
 import os
 from typing import Optional
 
-from fastapi import WebSocketDisconnect
+from fastapi import WebSocketDisconnect, WebSocket
 
 from opendevin import config
 from opendevin.action import (
@@ -31,7 +31,7 @@ class Session:
         agent: The Agent instance representing the agent.
         agent_task: The task representing the agent's execution.
     """
-    def __init__(self, websocket):
+    def __init__(self, websocket: WebSocket) -> None:
         """Initializes a new instance of the Session class.
 
         Args:
@@ -42,7 +42,7 @@ class Session:
         self.agent: Optional[Agent] = None
         self.agent_task = None
 
-    async def send_error(self, message):
+    async def send_error(self, message: str) -> None:
         """Sends an error message to the client.
 
         Args:
@@ -50,7 +50,7 @@ class Session:
         """
         await self.send({"error": True, "message": message})
 
-    async def send_message(self, message):
+    async def send_message(self, message: str) -> None:
         """Sends a message to the client.
 
         Args:
@@ -58,7 +58,7 @@ class Session:
         """
         await self.send({"message": message})
 
-    async def send(self, data):
+    async def send(self, data: dict[str, str]) -> None:
         """Sends data to the client.
 
         Args:
@@ -71,7 +71,7 @@ class Session:
         except Exception as e:
             print("Error sending data to client", e)
 
-    async def start_listening(self):
+    async def start_listening(self) -> None:
         """Starts listening for messages from the client."""
         try:
             while True:
@@ -101,7 +101,7 @@ class Session:
             print("Client websocket disconnected", e)
             self.disconnect()
 
-    async def create_controller(self, start_event=None):
+    async def create_controller(self, start_event=None) -> None:
         """Creates an AgentController instance.
 
         Args:
@@ -143,7 +143,7 @@ class Session:
             return
         await self.send({"action": "initialize", "message": "Control loop started."})
 
-    async def start_task(self, start_event):
+    async def start_task(self, start_event) -> None:
         """Starts a task for the agent.
 
         Args:
@@ -162,7 +162,7 @@ class Session:
         except Exception:
             await self.send_error("Error during task loop.")
 
-    def on_agent_event(self, event: Observation | Action):
+    def on_agent_event(self, event: Observation | Action) -> None:
         """Callback function for agent events.
 
         Args:
@@ -175,7 +175,7 @@ class Session:
         event_dict = event.to_dict()
         asyncio.create_task(self.send(event_dict), name="send event in callback")
     
-    def disconnect(self):
+    def disconnect(self) -> None:
         self.websocket = None
         if self.agent_task:
             self.agent_task.cancel()

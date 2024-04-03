@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any
 
 from . import json
 
@@ -87,15 +87,15 @@ You can also use the same action and args from the source monologue.
 """
 
 
-def get_summarize_monologue_prompt(thoughts):
+def get_summarize_monologue_prompt(thoughts: dict[str, Any]) -> str:
     return MONOLOGUE_SUMMARY_PROMPT % {
         'monologue': json.dumps({'old_monologue': thoughts}, indent=2),
     }
 
 def get_request_action_prompt(
         task: str,
-        thoughts: List[dict],
-        background_commands_obs: List[CmdOutputObservation] = [],
+        thoughts: list[dict],
+        background_commands_obs: list[CmdOutputObservation] = [],
 ):
     hint = ''
     if len(thoughts) > 0:
@@ -134,6 +134,6 @@ def parse_action_response(response: str) -> Action:
         action_dict['contents'] = action_dict.pop('content')
     return action_from_dict(action_dict)
 
-def parse_summary_response(response: str) -> List[dict]:
+def parse_summary_response(response: str) -> list[dict]:
     parsed = json.loads(response)
     return parsed['new_monologue']

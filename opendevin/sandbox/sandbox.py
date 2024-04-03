@@ -5,7 +5,6 @@ import sys
 import time
 import uuid
 from collections import namedtuple
-from typing import Dict, List, Tuple
 
 import docker
 import concurrent.futures
@@ -20,22 +19,24 @@ CONTAINER_IMAGE = config.get("SANDBOX_CONTAINER_IMAGE")
 
 # FIXME: On some containers, the devin user doesn't have enough permission, e.g. to install packages
 # How do we make this more flexible?
-RUN_AS_DEVIN = config.get("RUN_AS_DEVIN").lower() != "false"
+RUN_AS_DEVIN = str(config.get("RUN_AS_DEVIN")).lower() != "false"
+
 USER_ID = 1000
-if config.get_or_none("SANDBOX_USER_ID") is not None:
-    USER_ID = int(config.get_or_default("SANDBOX_USER_ID", ""))
+sandbox_user_id = config.get_or_none("SANDBOX_USER_ID")
+if sandbox_user_id:
+    USER_ID = int(sandbox_user_id)
 elif hasattr(os, "getuid"):
     USER_ID = os.getuid()
 
 
 class BackgroundCommand:
-    def __init__(self, id: int, command: str, result, pid: int):
+    def __init__(self, id: int, command: str, result, pid: int) -> None:
         self.id = id
         self.command = command
         self.result = result
         self.pid = pid
 
-    def parse_docker_exec_output(self, logs: bytes) -> Tuple[bytes, bytes]:
+    def parse_docker_exec_output(self, logs: bytes) -> tuple[bytes, bytes]:
         res = b""
         tail = b""
         i = 0
@@ -82,7 +83,7 @@ class BackgroundCommand:
 class DockerInteractive:
     closed = False
     cur_background_id = 0
-    background_commands: Dict[int, BackgroundCommand] = {}
+    background_commands: dict[int, BackgroundCommand] = {}
 
     def __init__(
         self,
@@ -90,7 +91,7 @@ class DockerInteractive:
         container_image: str | None = None,
         timeout: int = 120,
         id: str | None = None,
-    ):
+    ) -> None:
         if id is not None:
             self.instance_id = id
         else:
@@ -125,7 +126,7 @@ class DockerInteractive:
             self.setup_devin_user()
         atexit.register(self.cleanup)
 
-    def setup_devin_user(self):
+    def setup_devin_user(self) -> None:
         exit_code, logs = self.container.exec_run(
             [
                 "/bin/bash",
@@ -135,7 +136,7 @@ class DockerInteractive:
             workdir="/workspace",
         )
 
-    def get_exec_cmd(self, cmd: str) -> List[str]:
+    def get_exec_cmd(self, cmd: str) -> list[str]:
         if RUN_AS_DEVIN:
             return ["su", "devin", "-c", cmd]
         else:
@@ -147,7 +148,7 @@ class DockerInteractive:
         bg_cmd = self.background_commands[id]
         return bg_cmd.read_logs()
 
-    def execute(self, cmd: str) -> Tuple[int, str]:
+    def execute(self, cmd: str) -> tuple[int, str]:
         # TODO: each execute is not stateful! We need to keep track of the current working directory
         def run_command(container, command):
             return container.exec_run(command,workdir="/workspace")
@@ -177,7 +178,7 @@ class DockerInteractive:
         self.cur_background_id += 1
         return bg_cmd
 
-    def get_pid(self, cmd):
+    def get_pid(self, cmd) -> str | None:
         exec_result = self.container.exec_run("ps aux")
         processes = exec_result.output.decode('utf-8').splitlines()
         cmd = " ".join(self.get_exec_cmd(cmd))
@@ -200,11 +201,11 @@ class DockerInteractive:
         self.background_commands.pop(id)
         return bg_cmd
 
-    def close(self):
+    def close(self) -> None:
         self.stop_docker_container()
         self.closed = True
 
-    def stop_docker_container(self):
+    def stop_docker_container(self) -> None:
 
         # Initialize docker client. Throws an exception if Docker is not reachable.
         try:
@@ -228,7 +229,7 @@ class DockerInteractive:
         except docker.errors.NotFound:
             pass
 
-    def restart_docker_container(self):
+    def restart_docker_container(self) -> None:
         try:
             self.stop_docker_container()
         except docker.errors.DockerException as e:
@@ -270,7 +271,7 @@ class DockerInteractive:
             raise Exception("Failed to start container")
 
     # clean up the container, cannot do it in __del__ because the python interpreter is already shutting down
-    def cleanup(self):
+    def cleanup(self) -> None:
         if self.closed:
             return
         self.container.remove(force=True)

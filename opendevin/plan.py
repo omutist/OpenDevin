@@ -1,5 +1,3 @@
-from typing import List
-
 OPEN_STATE = 'open'
 COMPLETED_STATE = 'completed'
 ABANDONED_STATE = 'abandoned'
@@ -11,9 +9,9 @@ class Task:
     id: str
     goal: str
     parent: "Task | None"
-    subtasks: List["Task"]
+    subtasks: list["Task"]
 
-    def __init__(self, parent: "Task | None", goal: str, state: str=OPEN_STATE, subtasks: List = []):
+    def __init__(self, parent: "Task | None", goal: str, state: str=OPEN_STATE, subtasks: list = []):
         """Initializes a new instance of the Task class.
 
         Args:
@@ -40,7 +38,7 @@ class Task:
 
         self.state = OPEN_STATE
 
-    def to_string(self, indent=""):
+    def to_string(self, indent: str=""):
         """Returns a string representation of the task and its subtasks.
 
         Args:
@@ -163,7 +161,7 @@ class Plan:
             task = task.subtasks[part]
         return task
 
-    def add_subtask(self, parent_id: str, goal: str, subtasks: List = []):
+    def add_subtask(self, parent_id: str, goal: str, subtasks: list = []):
         """Adds a subtask to a parent task.
 
         Args:

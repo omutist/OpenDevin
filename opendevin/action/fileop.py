@@ -8,7 +8,7 @@ from .base import ExecutableAction
 # The LLM sometimes returns paths with this prefix, so we need to remove it
 PATH_PREFIX = "/workspace/"
 
-def resolve_path(base_path, file_path):
+def resolve_path(base_path, file_path) -> str:
     if file_path.startswith(PATH_PREFIX):
         file_path = file_path[len(PATH_PREFIX):]
     return os.path.join(base_path, file_path)

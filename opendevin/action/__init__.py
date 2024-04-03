@@ -4,6 +4,7 @@ from .browse import BrowseURLAction
 from .fileop import FileReadAction, FileWriteAction
 from .agent import AgentRecallAction, AgentThinkAction, AgentFinishAction, AgentEchoAction, AgentSummarizeAction
 from .tasks import AddTaskAction, ModifyTaskAction
+from typing import Any
 
 actions = (
     CmdKillAction,
@@ -20,7 +21,7 @@ actions = (
 
 ACTION_TYPE_TO_CLASS = {action_class.action:action_class for action_class in actions} # type: ignore[attr-defined]
 
-def action_from_dict(action: dict) -> Action:
+def action_from_dict(action: dict[str, Any]) -> Any:        # TODOO it can be Action with dict[str,str]
     action = action.copy()
     if "action" not in action:
         raise KeyError(f"'action' key is not found in {action=}")
